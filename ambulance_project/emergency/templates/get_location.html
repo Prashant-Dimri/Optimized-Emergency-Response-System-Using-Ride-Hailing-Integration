@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Location</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: #f9f9f9;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #fdfdfd;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        form {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 25px 35px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        button {
+            background: #ff6a00;
+            color: #fff;
+            font-size: 18px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.4s ease-in-out;
+        }
+
+        button:hover {
+            background: #ffa41b;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(255, 165, 30, 0.7);
+        }
+
+        input[type="hidden"] {
+            display: none;
+        }
+
+        h3 {
+            font-size: 1.6rem;
+            margin-top: 20px;
+            color: #e1f5fe;
+        }
+
+        p {
+            font-size: 1.3rem;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h3, p {
+            animation: fadeIn 1s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <h1>Emergency Page</h1>
+
+    <form method="POST" action="{% url 'send_location' %}" id="location-form">
+        {% csrf_token %}
+        <button type="button" onclick="getLocation()">Get Location and Send</button>
+
+        <input type="hidden" name="latitude" id="latitude" />
+        <input type="hidden" name="longitude" id="longitude" />
+    </form>
+
+    <br>
+
+    {% if nearest_ambulance %}
+        <h3>Nearest Ambulance:</h3>
+        <p>Place: {{ nearest_ambulance }}</p>
+    {% endif %}
+
+    {% if nearest_ola %}
+        <h3>Nearest Ola/Uber (Ride-Hailing):</h3>
+        <p>Place: {{ nearest_ola }}</p>
+    {% endif %}
+
+    {% if meeting_point %}
+        <h3>Meeting Point (Ambulance and Uber):</h3>
+        <p>Place: {{ meeting_point }}</p>
+    {% endif %}
+
+    <script>
+        function getLocation() {
+            const button = document.querySelector("button");
+            button.textContent = "Fetching Location...";
+            button.disabled = true;
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    document.getElementById('latitude').value = latitude;
+                    document.getElementById('longitude').value = longitude;
+
+                    document.getElementById('location-form').submit();
+                }, function(error) {
+                    alert("Error getting location: " + error.message);
+                    button.textContent = "Get Location and Send";
+                    button.disabled = false;
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+                button.textContent = "Get Location and Send";
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
